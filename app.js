@@ -566,12 +566,30 @@ function scorePlan() {
     const unknownPenalty = Math.max(0.15, 1 - unknownRatio);
     const lengthScore = Math.min(1, meaningfulText.length / 90);
     const numberBonus = /\d|[0-9０-９]|年|月|円|万円|件|名|社|日/.test(text) ? 1 : 0.86;
-    const ratio = Math.min(1, lengthScore * unknownPenalty * numberBonus);
+    const evidencePenalty = getEvidencePenalty(key, text);
+    const ratio = Math.min(1, lengthScore * unknownPenalty * numberBonus * evidencePenalty);
     const point = Math.round(max * ratio);
     const reason = point >= max ? "具体性と根拠が比較的そろっています。" : "具体的な数字、根拠、対象顧客、実績の補足余地があります。";
     return { name, key, max, point, reason };
   });
   return { total: items.reduce((sum, item) => sum + item.point, 0), items };
+}
+
+function getEvidencePenalty(sectionKey, text) {
+  let penalty = 1;
+  if (/予定|見込み|想定|確認中|取得予定|相談予定|これから|おおよそ|約|未取得/.test(text)) {
+    penalty -= 0.12;
+  }
+  if (sectionKey === "funding" && /見積取得予定|確認中|これから確認|予定/.test(text)) {
+    penalty -= 0.12;
+  }
+  if (sectionKey === "forecast" && !/×|x|掛ける|客単価.*(件|名|日)|件数|稼働日数|営業日数/.test(text)) {
+    penalty -= 0.10;
+  }
+  if (sectionKey === "target" && !/既に|見込み客|候補|相談|契約|取引先|紹介/.test(text)) {
+    penalty -= 0.08;
+  }
+  return Math.max(0.68, penalty);
 }
 
 function isNoBorrowing(text) {
