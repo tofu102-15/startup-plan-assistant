@@ -819,6 +819,11 @@ tr.active-answer th {
 
   .chat-panel {
     max-height: none;
+    grid-template-rows: auto minmax(160px, 42vh) auto auto;
+  }
+
+  .chat-log {
+    max-height: 42vh;
   }
 
   .steps {
