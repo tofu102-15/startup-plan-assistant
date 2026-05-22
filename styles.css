@@ -819,11 +819,20 @@ tr.active-answer th {
 
   .chat-panel {
     max-height: none;
-    grid-template-rows: auto minmax(160px, 42vh) auto auto;
+    order: 1;
+    grid-template-rows: auto minmax(140px, 24vh) auto auto;
   }
 
   .chat-log {
-    max-height: 42vh;
+    max-height: 24vh;
+  }
+
+  .interview-map {
+    order: 2;
+  }
+
+  .preview {
+    order: 3;
   }
 
   .steps {
