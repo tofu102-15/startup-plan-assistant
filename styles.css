@@ -278,8 +278,9 @@ h3 {
 
 .chat-panel {
   display: grid;
-  grid-template-rows: auto minmax(360px, 1fr) auto auto;
-  max-height: calc(100vh - 110px);
+  grid-template-rows: auto minmax(220px, 1fr) auto auto;
+  max-height: calc(100vh - 124px);
+  overflow: hidden;
 }
 
 .progress {
@@ -362,7 +363,8 @@ label {
   display: grid;
   gap: 12px;
   overflow: auto;
-  padding: 4px 2px 16px;
+  padding: 4px 2px 12px;
+  min-height: 0;
 }
 
 .message-row {
@@ -441,11 +443,13 @@ label {
 .final-actions {
   display: grid;
   justify-items: end;
-  margin-top: 12px;
+  margin-top: 10px;
   padding: 14px;
   border-radius: 8px;
   background: #f6faf8;
   border: 1px solid #c9d8d2;
+  max-height: 34vh;
+  overflow: auto;
 }
 
 .final-actions p {
