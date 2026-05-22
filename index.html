@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>創業計画書作成GPT風アプリ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-area">
+      <img class="mascot" src="assets/tofu-helper.png" alt="" aria-hidden="true">
+      <div>
+        <p class="eyebrow">1項目ずつ壁打ちしながら、日本政策金融公庫向けの下書きを作成</p>
+        <h1>創業計画書作成アシスタント</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="ghost-button" type="button" id="sampleButton">サンプル</button>
+      <button class="ghost-button" type="button" id="clearButton">初期化</button>
+      <button class="primary-button" type="button" id="printButton">印刷 / PDF保存</button>
+    </div>
+  </header>
+
+  <main class="chat-layout">
+    <aside class="interview-map" aria-label="聞き取り項目">
+      <p class="section-label">Interview</p>
+      <h2>聞き取り項目</h2>
+      <ol id="sectionList"></ol>
+      <div class="score-mini" id="miniScore">採点は下書き作成後に表示</div>
+    </aside>
+
+    <section class="chat-panel" aria-label="問答">
+      <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <form class="reply-box" id="replyForm">
+        <textarea id="replyInput" rows="3" placeholder="ここに回答してください。「未定」「分からない」でも進められます。"></textarea>
+        <div class="reply-actions">
+          <button class="ghost-button" type="button" id="backButton">1つ戻る</button>
+          <button class="ghost-button" type="button" id="skipButton">未定で進む</button>
+          <button class="primary-button" type="submit">回答する</button>
+        </div>
+      </form>
+      <div class="final-actions" id="finalActions" hidden>
+        <p id="finalActionText">聞き取りが完了しました。ここまでの内容で、日本政策金融公庫フォーマットに沿った創業計画書の下書きを作成してよいですか？</p>
+        <button class="ghost-button" type="button" id="returnChatButton" hidden>問答に戻る</button>
+        <button class="primary-button" type="button" id="createDraftButton">下書きを作成する</button>
+      </div>
+    </section>
+
+    <section class="preview" aria-label="下書きプレビュー">
+      <div class="preview-toolbar">
+        <div>
+          <p class="section-label">Output</p>
+          <h2>整理内容・下書き</h2>
+        </div>
+        <p class="save-state" id="saveState">入力すると自動保存</p>
+      </div>
+
+      <article class="document" id="documentPreview">
+        <section>
+          <h3>ここまでの整理</h3>
+          <div id="summaryPreview" class="summary-list"></div>
+        </section>
+        <section id="draftSection" hidden>
+          <div class="doc-title">
+            <p id="docDate"></p>
+            <h2>創業計画書 下書き</h2>
+            <p id="docName"></p>
+          </div>
+          <div id="draftOutput"></div>
+        </section>
+        <section id="reviewSection" hidden>
+          <h3>要確認・採点・改善提案</h3>
+          <div id="reviewOutput"></div>
+        </section>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
