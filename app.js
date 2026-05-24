@@ -93,6 +93,7 @@ const sectionList = document.querySelector("#sectionList");
 const progressBar = document.querySelector("#progressBar");
 const progressText = document.querySelector("#progressText");
 const questionText = document.querySelector("#questionText");
+const headerMascot = document.querySelector(".mascot");
 const summaryPreview = document.querySelector("#summaryPreview");
 const finalActions = document.querySelector("#finalActions");
 const finalActionText = document.querySelector("#finalActionText");
@@ -310,6 +311,7 @@ function render() {
   renderChat();
   renderSummary();
   renderProgress();
+  updateMascot();
   finalActions.hidden = !isDone() || state.improving;
   updateDraftActionText(false);
   replyForm.hidden = isDone() && !state.improving;
@@ -346,9 +348,10 @@ function renderSections() {
 
 function renderChat() {
   const latestAssistantIndex = findLatestAssistantMessageIndex();
+  const mascotSrc = getMascotImage();
   chatLog.innerHTML = state.messages.map((message, index) => {
     const activeClass = index === latestAssistantIndex && !isDoneOrDraftOnly() ? " active-question" : "";
-    const avatar = message.role === "assistant" ? `<img class="chat-avatar" src="assets/tofu-helper.png" alt="">` : "";
+    const avatar = message.role === "assistant" ? `<img class="chat-avatar" src="${mascotSrc}" alt="">` : "";
     return `<div class="message-row ${message.role}">${avatar}<div class="message ${message.role}${activeClass}"><p>${escapeHtml(message.text)}</p></div></div>`;
   }).join("");
   chatLog.scrollTop = chatLog.scrollHeight;
@@ -395,12 +398,31 @@ function isActiveAnswer(sectionKey, answerIndex) {
 }
 
 function renderProgress() {
-  const total = sections.reduce((sum, section) => sum + section.questions.length, 0);
-  const answered = sections.reduce((sum, section) => sum + state.answers[section.key].filter(Boolean).length, 0);
+  const { total, answered } = getProgressStats();
   const remaining = Math.max(0, total - answered);
   progressBar.style.width = `${Math.max(4, (answered / total) * 100)}%`;
   progressText.textContent = `${answered} / ${total} 完了・残り${remaining}問`;
   questionText.textContent = getProgressLabel();
+}
+
+function getProgressStats() {
+  const total = sections.reduce((sum, section) => sum + section.questions.length, 0);
+  const answered = sections.reduce((sum, section) => sum + state.answers[section.key].filter(Boolean).length, 0);
+  return { total, answered };
+}
+
+function getMascotImage() {
+  const { total, answered } = getProgressStats();
+  const ratio = total ? answered / total : 0;
+  if (ratio >= 0.8 || state.draftCreated) return "assets/tofu-helper-encourage-3.png";
+  if (ratio >= 0.45) return "assets/tofu-helper-encourage-2.png";
+  if (ratio > 0) return "assets/tofu-helper-encourage-1.png";
+  return "assets/tofu-helper.png";
+}
+
+function updateMascot() {
+  if (!headerMascot) return;
+  headerMascot.src = getMascotImage();
 }
 
 function getProgressLabel() {
