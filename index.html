@@ -3,8 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>創業計画書作成GPT風アプリ</title>
-  <link rel="stylesheet" href="styles.css?v=20260522-5">
+  <title>創業計画書作成アシスタント</title>
+  <meta name="description" content="日本政策金融公庫向けの創業計画書を、質問に答えながら整理し、下書き・採点・改善提案まで作成できるアシスタントです。">
+  <meta property="og:title" content="創業計画書作成アシスタント">
+  <meta property="og:description" content="1項目ずつ壁打ちしながら、創業計画書の下書きを作成します。">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="styles.css?v=20260524-1">
 </head>
 <body>
   <header class="app-header">
@@ -31,6 +35,10 @@
     </aside>
 
     <section class="chat-panel" aria-label="問答">
+      <div class="progress-meta" aria-live="polite">
+        <span id="progressText">0 / 0</span>
+        <span id="questionText">準備中</span>
+      </div>
       <div class="progress">
         <div class="progress-bar" id="progressBar"></div>
       </div>
@@ -80,6 +88,6 @@
     </section>
   </main>
 
-  <script src="app.js?v=20260522-5"></script>
+  <script src="app.js?v=20260524-1"></script>
 </body>
 </html>

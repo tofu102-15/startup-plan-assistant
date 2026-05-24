@@ -91,6 +91,8 @@ const skipButton = document.querySelector("#skipButton");
 const backButton = document.querySelector("#backButton");
 const sectionList = document.querySelector("#sectionList");
 const progressBar = document.querySelector("#progressBar");
+const progressText = document.querySelector("#progressText");
+const questionText = document.querySelector("#questionText");
 const summaryPreview = document.querySelector("#summaryPreview");
 const finalActions = document.querySelector("#finalActions");
 const finalActionText = document.querySelector("#finalActionText");
@@ -107,6 +109,7 @@ const saveState = document.querySelector("#saveState");
 const miniScore = document.querySelector("#miniScore");
 
 const STORAGE_KEY = "startup-plan-chat-v2";
+document.title = "創業計画書作成アシスタント";
 let state = freshState();
 let saveTimer = null;
 
@@ -394,7 +397,20 @@ function isActiveAnswer(sectionKey, answerIndex) {
 function renderProgress() {
   const total = sections.reduce((sum, section) => sum + section.questions.length, 0);
   const answered = sections.reduce((sum, section) => sum + state.answers[section.key].filter(Boolean).length, 0);
+  const remaining = Math.max(0, total - answered);
   progressBar.style.width = `${Math.max(4, (answered / total) * 100)}%`;
+  progressText.textContent = `${answered} / ${total} 完了・残り${remaining}問`;
+  questionText.textContent = getProgressLabel();
+}
+
+function getProgressLabel() {
+  if (state.improving) {
+    return `改善ヒアリング ${Math.min(state.improveIndex + 1, state.improveQueue.length)} / ${state.improveQueue.length}`;
+  }
+  if (isDone()) {
+    return state.draftCreated ? "下書き作成済み" : "聞き取り完了";
+  }
+  return `${currentSection().title} ${state.questionIndex + 1} / ${currentSection().questions.length}`;
 }
 
 function createDraft() {

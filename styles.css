@@ -34,6 +34,11 @@ button {
   cursor: pointer;
 }
 
+button:focus-visible {
+  outline: 3px solid rgba(22, 99, 79, 0.22);
+  outline-offset: 2px;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -278,9 +283,23 @@ h3 {
 
 .chat-panel {
   display: grid;
-  grid-template-rows: auto minmax(220px, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(220px, 1fr) auto auto;
   max-height: calc(100vh - 124px);
   overflow: hidden;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.progress-meta span:last-child {
+  text-align: right;
 }
 
 .progress {
@@ -820,11 +839,11 @@ tr.active-answer th {
   .chat-panel {
     max-height: none;
     order: 1;
-    grid-template-rows: auto minmax(96px, 14vh) auto auto;
+    grid-template-rows: auto auto minmax(240px, 42vh) auto auto;
   }
 
   .chat-log {
-    max-height: 14vh;
+    max-height: 42vh;
   }
 
   .interview-map {
@@ -879,7 +898,8 @@ tr.active-answer th {
     display: none;
   }
 
-  .layout {
+  .layout,
+  .chat-layout {
     display: block;
     padding: 0;
   }
