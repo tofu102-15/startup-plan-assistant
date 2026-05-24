@@ -193,16 +193,16 @@ function submitAnswer(rawAnswer) {
 function submitImprovement(answerText) {
   const item = state.improveQueue[state.improveIndex];
   if (!item) return;
-  const prompt = improvePrompts[item.key];
+  const answerIndex = item.index ?? improvePrompts[item.key].index;
   addUser(answerText);
-  setImprovedAnswer(item.key, prompt.index, answerText);
+  setImprovedAnswer(item.key, answerIndex, answerText);
   if (!state.improvedKeys.includes(item.key)) state.improvedKeys.push(item.key);
   addAssistant(`反映しました。「${sectionByKey(item.key).title}」の内容を補強しました。`);
 
   state.improveIndex += 1;
   const next = state.improveQueue[state.improveIndex];
   if (next) {
-    addAssistant(improvePrompts[next.key].text);
+    addAssistant(getImprovementPrompt(next));
     fillImprovementInput(next);
   } else {
     state.improving = false;
@@ -220,8 +220,8 @@ function setImprovedAnswer(sectionKey, index, text) {
 }
 
 function fillImprovementInput(item) {
-  const prompt = improvePrompts[item.key];
-  replyInput.value = state.answers[item.key][prompt.index] || "";
+  const answerIndex = item.index ?? improvePrompts[item.key].index;
+  replyInput.value = state.answers[item.key][answerIndex] || "";
   window.setTimeout(() => {
     replyInput.focus();
     replyInput.selectionStart = replyInput.value.length;
@@ -231,10 +231,7 @@ function fillImprovementInput(item) {
 
 function startImprovement() {
   const score = scorePlan();
-  state.improveQueue = score.items
-    .filter((item) => item.point < item.max && !state.improvedKeys.includes(item.key))
-    .sort((a, b) => (a.point / a.max) - (b.point / b.max))
-    .slice(0, 3);
+  state.improveQueue = buildImprovementQueue(score);
   if (!state.improveQueue.length) {
     addAssistant("前回までに主要な弱点は一通り補強済みです。さらに改善する場合は、右側の整理内容を直接見直すか、下書きを再作成して点数の低い項目を確認してください。");
     save();
@@ -246,11 +243,48 @@ function startImprovement() {
   state.draftCreated = false;
   draftSection.hidden = true;
   reviewSection.hidden = true;
-  addAssistant("90点以上に近づけるため、弱い項目から追加で確認します。入力欄には現在の回答を入れておくので、必要な部分を編集・追記してください。");
-  addAssistant(improvePrompts[state.improveQueue[0].key].text);
+  const hasUnknown = state.improveQueue.some((item) => item.reasonType === "unknown");
+  addAssistant(hasUnknown
+    ? "まずは「未定」「分からない」「要確認」になっている箇所から追加で確認します。入力欄には現在の回答を入れておくので、分かる範囲で編集・追記してください。"
+    : "90点以上に近づけるため、弱い項目から追加で確認します。入力欄には現在の回答を入れておくので、必要な部分を編集・追記してください。");
+  addAssistant(getImprovementPrompt(state.improveQueue[0]));
   fillImprovementInput(state.improveQueue[0]);
   save();
   render();
+}
+
+function buildImprovementQueue(score) {
+  const unknownItems = sections
+    .map((section) => {
+      const index = findUnknownAnswerIndex(section.key);
+      if (index < 0) return null;
+      const scoredItem = score.items.find((item) => item.key === section.key);
+      return {
+        ...scoredItem,
+        key: section.key,
+        index,
+        label: section.labels[index],
+        reasonType: "unknown"
+      };
+    })
+    .filter(Boolean);
+
+  const weakItems = score.items
+    .filter((item) => item.point < item.max && !state.improvedKeys.includes(item.key) && findUnknownAnswerIndex(item.key) < 0)
+    .sort((a, b) => (a.point / a.max) - (b.point / b.max));
+
+  return [...unknownItems, ...weakItems].slice(0, 3);
+}
+
+function findUnknownAnswerIndex(sectionKey) {
+  return state.answers[sectionKey].findIndex((text) => isUnknownAnswer(sectionKey, text));
+}
+
+function getImprovementPrompt(item) {
+  if (item.reasonType === "unknown") {
+    return `未定になっている「${sectionByKey(item.key).title} - ${item.label}」を確認します。まだ確定していなくても大丈夫なので、現時点の見込み・候補・確認予定を分かる範囲で教えてください。`;
+  }
+  return improvePrompts[item.key].text;
 }
 
 function goBack() {
@@ -399,8 +433,8 @@ function isActiveSection(sectionKey) {
 function isActiveAnswer(sectionKey, answerIndex) {
   if (state.improving) {
     const item = state.improveQueue[state.improveIndex];
-    const prompt = item ? improvePrompts[item.key] : null;
-    return item?.key === sectionKey && prompt?.index === answerIndex;
+    const targetIndex = item ? (item.index ?? improvePrompts[item.key].index) : null;
+    return item?.key === sectionKey && targetIndex === answerIndex;
   }
   return !isDone() && currentSection()?.key === sectionKey && state.questionIndex === answerIndex;
 }
