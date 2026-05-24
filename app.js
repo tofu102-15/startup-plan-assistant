@@ -269,11 +269,17 @@ function buildImprovementQueue(score) {
     })
     .filter(Boolean);
 
-  const weakItems = score.items
+  const freshWeakItems = score.items
     .filter((item) => item.point < item.max && !state.improvedKeys.includes(item.key) && findUnknownAnswerIndex(item.key) < 0)
     .sort((a, b) => (a.point / a.max) - (b.point / b.max));
 
-  return [...unknownItems, ...weakItems].slice(0, 3);
+  const queue = [...unknownItems, ...freshWeakItems].slice(0, 3);
+  if (queue.length) return queue;
+
+  return score.items
+    .filter((item) => item.point < item.max)
+    .sort((a, b) => (a.point / a.max) - (b.point / b.max))
+    .slice(0, 3);
 }
 
 function findUnknownAnswerIndex(sectionKey) {
@@ -703,7 +709,7 @@ function countUnknownAnswers(sectionKey) {
 function isUnknownAnswer(sectionKey, text) {
   const value = String(text || "").trim();
   if (!value) return true;
-  if (/^(未定|分からない|わからない|要確認)$/u.test(value)) return true;
+  if (/未定|分からない|わからない|要確認/u.test(value)) return true;
   return sectionKey !== "borrowing" && /^(なし|特になし)$/u.test(value);
 }
 
