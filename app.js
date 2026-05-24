@@ -282,7 +282,9 @@ function findUnknownAnswerIndex(sectionKey) {
 
 function getImprovementPrompt(item) {
   if (item.reasonType === "unknown") {
-    return `未定になっている「${sectionByKey(item.key).title} - ${item.label}」を確認します。まだ確定していなくても大丈夫なので、現時点の見込み・候補・確認予定を分かる範囲で教えてください。`;
+    const section = sectionByKey(item.key);
+    const originalQuestion = section.questions[item.index];
+    return `「${section.title} - ${item.label}」が未定になっています。\n\n${originalQuestion}\n\nまだ未定なら、今の候補・不安・これから確認することだけでも大丈夫です。`;
   }
   return improvePrompts[item.key].text;
 }
