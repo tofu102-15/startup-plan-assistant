@@ -136,6 +136,12 @@ h3 {
   border-color: var(--primary);
 }
 
+.restore-button {
+  color: var(--primary-dark);
+  border-color: #a9c6ba;
+  background: #f6faf8;
+}
+
 .layout,
 .chat-layout {
   display: grid;
@@ -819,6 +825,7 @@ tr.active-answer th {
     grid-template-columns: 1fr 1fr;
   }
 
+  .header-actions .restore-button,
   .header-actions .primary-button {
     grid-column: 1 / -1;
   }

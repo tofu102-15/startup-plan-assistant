@@ -106,10 +106,12 @@ const reviewOutput = document.querySelector("#reviewOutput");
 const printButton = document.querySelector("#printButton");
 const sampleButton = document.querySelector("#sampleButton");
 const clearButton = document.querySelector("#clearButton");
+const restoreButton = document.querySelector("#restoreButton");
 const saveState = document.querySelector("#saveState");
 const miniScore = document.querySelector("#miniScore");
 
 const STORAGE_KEY = "startup-plan-chat-v2";
+const BACKUP_KEY = "startup-plan-chat-backup-v1";
 document.title = "創業計画書作成アシスタント";
 let state = freshState();
 let saveTimer = null;
@@ -312,6 +314,7 @@ function render() {
   renderSummary();
   renderProgress();
   updateMascot();
+  updateRestoreButton();
   finalActions.hidden = !isDone() || state.improving;
   updateDraftActionText(false);
   replyForm.hidden = isDone() && !state.improving;
@@ -677,6 +680,56 @@ function save() {
   }, 1200);
 }
 
+function backupCurrentState(reason) {
+  if (!hasUserContent()) return;
+  window.localStorage.setItem(BACKUP_KEY, JSON.stringify({
+    savedAt: new Date().toISOString(),
+    reason,
+    state
+  }));
+}
+
+function hasUserContent() {
+  return state.messages.length > 1 || sections.some((section) => state.answers[section.key].some(Boolean));
+}
+
+function loadBackup() {
+  const stored = window.localStorage.getItem(BACKUP_KEY);
+  if (!stored) return null;
+  try {
+    const backup = JSON.parse(stored);
+    if (!backup?.state) return null;
+    return backup;
+  } catch {
+    return null;
+  }
+}
+
+function updateRestoreButton() {
+  if (!restoreButton) return;
+  const backup = loadBackup();
+  restoreButton.hidden = !backup;
+  restoreButton.title = backup ? `保存日時: ${new Date(backup.savedAt).toLocaleString("ja-JP")}` : "";
+}
+
+function restoreBackup() {
+  const backup = loadBackup();
+  if (!backup) return;
+  if (!window.confirm("サンプル/初期化の前の入力内容を復元しますか？現在の入力内容は上書きされます。")) return;
+  state = backup.state;
+  state.history ||= [];
+  state.improveQueue ||= [];
+  state.improveIndex ||= 0;
+  state.improving ||= false;
+  state.improvedKeys ||= [];
+  cleanupUnknownPrefixes();
+  save();
+  render();
+  addAssistant("直前の入力内容を復元しました。続きを編集できます。");
+  save();
+  render();
+}
+
 function load() {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (!stored) return;
@@ -733,6 +786,7 @@ printButton.addEventListener("click", () => window.print());
 reviewOutput.addEventListener("click", (event) => {
   if (event.target.id === "startImproveButton") startImprovement();
 });
+restoreButton.addEventListener("click", restoreBackup);
 summaryPreview.addEventListener("input", (event) => {
   const target = event.target;
   if (!target.classList.contains("summary-edit")) return;
@@ -749,6 +803,7 @@ summaryPreview.addEventListener("input", (event) => {
   renderProgress();
 });
 sampleButton.addEventListener("click", () => {
+  backupCurrentState("sample");
   state = freshState();
   state.answers = JSON.parse(JSON.stringify(sampleAnswers));
   state.sectionIndex = sections.length;
@@ -762,6 +817,7 @@ sampleButton.addEventListener("click", () => {
 });
 clearButton.addEventListener("click", () => {
   if (!window.confirm("入力内容を初期化しますか？")) return;
+  backupCurrentState("clear");
   state = freshState();
   window.localStorage.removeItem(STORAGE_KEY);
   addAssistant(currentQuestion());
