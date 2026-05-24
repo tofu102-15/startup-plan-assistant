@@ -52,6 +52,54 @@ button:focus-visible {
   z-index: 5;
 }
 
+.completion-toast {
+  position: fixed;
+  top: 104px;
+  right: 22px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid #a9c6ba;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(23, 32, 38, 0.18);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.completion-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.completion-toast img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.completion-title,
+.completion-text {
+  margin: 0;
+}
+
+.completion-title {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.completion-text {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .brand-area {
   display: flex;
   align-items: center;
@@ -809,6 +857,13 @@ tr.active-answer th {
     align-items: stretch;
     flex-direction: column;
     padding: 18px;
+  }
+
+  .completion-toast {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
   }
 
   .brand-area {

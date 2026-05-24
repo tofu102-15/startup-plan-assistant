@@ -109,12 +109,16 @@ const clearButton = document.querySelector("#clearButton");
 const restoreButton = document.querySelector("#restoreButton");
 const saveState = document.querySelector("#saveState");
 const miniScore = document.querySelector("#miniScore");
+const completionToast = document.querySelector("#completionToast");
+const completionTitle = document.querySelector("#completionTitle");
+const completionText = document.querySelector("#completionText");
 
 const STORAGE_KEY = "startup-plan-chat-v2";
 const BACKUP_KEY = "startup-plan-chat-backup-v1";
 document.title = "創業計画書作成アシスタント";
 let state = freshState();
 let saveTimer = null;
+let completionTimer = null;
 
 function freshState() {
   return {
@@ -167,6 +171,7 @@ function submitAnswer(rawAnswer) {
   state.questionIndex += 1;
   if (state.questionIndex >= section.questions.length) {
     addAssistant(`「${section.title}」はここまで整理できました。次の項目に進みます。`);
+    showCompletion(section.title);
     state.sectionIndex += 1;
     state.questionIndex = 0;
   }
@@ -426,6 +431,23 @@ function getMascotImage() {
 function updateMascot() {
   if (!headerMascot) return;
   headerMascot.src = getMascotImage();
+}
+
+function showCompletion(sectionTitle) {
+  if (!completionToast) return;
+  const doneCount = Math.min(state.sectionIndex + 1, sections.length);
+  completionTitle.textContent = `${sectionTitle} 完了`;
+  completionText.textContent = `${doneCount} / ${sections.length}項目クリア。いい調子です。`;
+  completionToast.hidden = false;
+  completionToast.classList.remove("show");
+  window.clearTimeout(completionTimer);
+  window.requestAnimationFrame(() => completionToast.classList.add("show"));
+  completionTimer = window.setTimeout(() => {
+    completionToast.classList.remove("show");
+    window.setTimeout(() => {
+      completionToast.hidden = true;
+    }, 220);
+  }, 2400);
 }
 
 function getProgressLabel() {
